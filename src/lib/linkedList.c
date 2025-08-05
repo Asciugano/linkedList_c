@@ -1,14 +1,16 @@
 #include "./linkedList.h"
+#include "compare.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-ListItem *pop(List *list, int value) {
+ListItem *pop(List *list, void *value, bool (*cmp)(void *, void *)) {
   ListItem *head = list->entry;
   if (!head)
     return NULL;
 
-  if (head->value == value) {
+  if (cmp(head->value, value)) {
     ListItem *next = head->next;
     free(head);
     list->len--;
@@ -19,7 +21,7 @@ ListItem *pop(List *list, int value) {
   ListItem *curr = head->next;
 
   while (curr) {
-    if (curr->value == value) {
+    if (cmp(curr->value, value)) {
       prev->next = curr->next;
       free(curr);
       list->len--;
@@ -80,7 +82,7 @@ size_t push(List *list, ListItem *newItem, size_t i) {
   return count;
 }
 
-char *get_string_to_print(List *list) {
+char *get_string_to_print(List *list, void (*to_string)(void *, char *)) {
   if (!list || list->len == 0 || !list->entry) {
     char *empty = malloc(6);
 
@@ -101,9 +103,10 @@ char *get_string_to_print(List *list) {
   ListItem *current = list->entry;
 
   while (current) {
-    char num[16];
-    snprintf(num, sizeof(num), " %d", current->value);
-    strcat(result, num);
+    char buffer[16];
+    to_string(current->value, buffer);
+    strcat(result, " ");
+    strcat(result, buffer);
     if (current->next)
       strcat(result, ",");
 
@@ -114,20 +117,21 @@ char *get_string_to_print(List *list) {
   return result;
 }
 
-void print_list(List *list) {
-  char *str = get_string_to_print(list);
+void print_list(List *list, void (*to_string)(void *, char *)) {
+  char *str = get_string_to_print(list, to_string);
   printf("%s", str);
   free(str);
 }
 
-void free_list(List *list, bool clean_struct) {
+void free_list(List *list, bool clean_struct, void (*free_value)(void *)) {
   if (!list)
     exit(1);
 
   ListItem *curr = list->entry;
   while (curr) {
     ListItem *next = curr->next;
-    free(curr);
+    if (free_value)
+      free_value(curr->value);
     curr = next;
   }
   list->entry = NULL;
@@ -137,7 +141,7 @@ void free_list(List *list, bool clean_struct) {
     free(list);
 }
 
-List *init_list() {
+List *init_list(DataType type) {
   List *list = malloc(sizeof(List));
   if (!list)
     return NULL;
@@ -145,11 +149,28 @@ List *init_list() {
   list->entry = NULL;
   list->end = NULL;
   list->len = 0;
+  list->type = type;
+
+  switch (type) {
+  case TYPE_INT:
+    list->cmp = compare_int;
+    list->to_string = int_toString;
+    list->free = free_int;
+    break;
+  case TYPE_FLOAT:
+    break;
+  case TYPE_CHAR:
+    break;
+  deafult:
+    list->cmp = NULL;
+    list->to_string = NULL;
+    list->free = NULL;
+  }
 
   return list;
 }
 
-ListItem *init_item(int value) {
+ListItem *init_item(void *value) {
   ListItem *item = malloc(sizeof(ListItem));
   if (!item)
     return NULL;
