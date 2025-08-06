@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/_types/_va_list.h>
 
 #include "./compare.h"
 
@@ -26,13 +27,18 @@ typedef struct {
   bool (*cmp)(void *, void *);
   void (*to_string)(void *, char *);
   void (*free)(void *free);
+  void *(*make)(va_list);
 } List;
 
-List *init_list(DataType type);
-ListItem *init_item(void *value);
-void free_list(List *list, bool clean_struct, void (*free_value)(void *));
+void *make_value(List *list, ...);
 
-ListItem *pop(List *list, void *value, bool (*cmp)(void *, void *));
+List *init_list(DataType type);
+ListItem *init_item(List *list, ...);
+void free_list(List *list, bool clean_struct);
+
+size_t get_index(List *list, ListItem *item);
+ListItem *get_item(List *list, size_t idx);
+ListItem *pop(List *list, void *value);
 size_t push(List *list, ListItem *newItem, size_t i);
-char *get_string_to_print(List *list, void (*to_string)(void *, char *));
-void print_list(List *list, void (*to_string)(void *, char *));
+char *get_string_to_print(List *list);
+void print_list(List *list);

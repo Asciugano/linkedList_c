@@ -1,18 +1,21 @@
 #include "./linkedList.h"
 #include "compare.h"
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/_types/_va_list.h>
 
-ListItem *pop(List *list, void *value, bool (*cmp)(void *, void *)) {
+ListItem *pop(List *list, void *value) {
   ListItem *head = list->entry;
   if (!head)
     return NULL;
 
-  if (cmp(head->value, value)) {
+  if (list->cmp(head->value, value)) {
     ListItem *next = head->next;
     free(head);
+    list->entry = next;
     list->len--;
     return next;
   }
@@ -21,7 +24,7 @@ ListItem *pop(List *list, void *value, bool (*cmp)(void *, void *)) {
   ListItem *curr = head->next;
 
   while (curr) {
-    if (cmp(curr->value, value)) {
+    if (list->cmp(curr->value, value)) {
       prev->next = curr->next;
       free(curr);
       list->len--;
@@ -62,10 +65,9 @@ size_t push(List *list, ListItem *newItem, size_t i) {
 
     if (count >= list->len - 2)
       list->end = newItem;
-    if (count == i) {
+    if (count == i - 1) {
       prev->next = newItem;
       newItem->next = curr;
-      curr->next = next;
 
       list->len++;
       return count;
@@ -82,7 +84,7 @@ size_t push(List *list, ListItem *newItem, size_t i) {
   return count;
 }
 
-char *get_string_to_print(List *list, void (*to_string)(void *, char *)) {
+char *get_string_to_print(List *list) {
   if (!list || list->len == 0 || !list->entry) {
     char *empty = malloc(6);
 
@@ -104,7 +106,7 @@ char *get_string_to_print(List *list, void (*to_string)(void *, char *)) {
 
   while (current) {
     char buffer[16];
-    to_string(current->value, buffer);
+    list->to_string(current->value, buffer);
     strcat(result, " ");
     strcat(result, buffer);
     if (current->next)
@@ -117,21 +119,22 @@ char *get_string_to_print(List *list, void (*to_string)(void *, char *)) {
   return result;
 }
 
-void print_list(List *list, void (*to_string)(void *, char *)) {
-  char *str = get_string_to_print(list, to_string);
+void print_list(List *list) {
+  char *str = get_string_to_print(list);
   printf("%s", str);
   free(str);
 }
 
-void free_list(List *list, bool clean_struct, void (*free_value)(void *)) {
+void free_list(List *list, bool clean_struct) {
   if (!list)
     exit(1);
 
   ListItem *curr = list->entry;
   while (curr) {
     ListItem *next = curr->next;
-    if (free_value)
-      free_value(curr->value);
+    if (list->free)
+      list->free(curr->value);
+    free(curr);
     curr = next;
   }
   list->entry = NULL;
@@ -156,22 +159,44 @@ List *init_list(DataType type) {
     list->cmp = compare_int;
     list->to_string = int_toString;
     list->free = free_int;
+    list->make = (void *(*)(va_list))make_int;
     break;
   case TYPE_FLOAT:
     break;
   case TYPE_CHAR:
     break;
-  deafult:
+  default:
     list->cmp = NULL;
     list->to_string = NULL;
     list->free = NULL;
+    break;
   }
 
   return list;
 }
 
-ListItem *init_item(void *value) {
-  ListItem *item = malloc(sizeof(ListItem));
+void *make_value(List *list, ...) {
+  va_list args;
+  va_start(args, list);
+  void *result = list->make(args);
+  va_end(args);
+
+  return result;
+}
+
+ListItem *init_item(List *list, ...) {
+  if (!list || !list->make)
+    return NULL;
+
+  va_list args;
+  va_start(args, list);
+  void *value = list->make(args);
+  va_end(args);
+
+  if (!value)
+    return NULL;
+
+  ListItem *item = calloc(1, sizeof(ListItem));
   if (!item)
     return NULL;
 
@@ -179,4 +204,35 @@ ListItem *init_item(void *value) {
   item->next = NULL;
 
   return item;
+}
+
+size_t get_index(List *list, ListItem *item) {
+  if (!list || !item)
+    return (size_t)-1;
+
+  ListItem *next = list->entry;
+  size_t i = 0;
+  while (next) {
+    if (list->cmp(next->value, item->value))
+      return i;
+
+    next = next->next;
+    i++;
+  }
+
+  return (size_t)-1;
+}
+
+ListItem *get_item(List *list, size_t idx) {
+  if (!list || idx < 0 || idx > list->len)
+    return NULL;
+
+  ListItem *next = list->entry;
+  size_t count = 0;
+  while (next && count != idx) {
+    next = next->next;
+    count++;
+  }
+
+  return next;
 }
