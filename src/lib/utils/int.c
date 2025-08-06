@@ -1,4 +1,4 @@
-#include "./utils.h"
+#include "./int.h"
 #include <stdlib.h>
 
 bool compare_int(void *a, void *b) { return (int *)a == (int *)b; }

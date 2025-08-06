@@ -1,4 +1,6 @@
 #include "./linkedList.h"
+#include "./utils/char.h"
+#include "./utils/float.h"
 
 ListItem *pop(List *list, void *value) {
   ListItem *head = list->entry;
@@ -155,8 +157,16 @@ List *init_list(DataType type) {
     list->make = (void *(*)(va_list))make_int;
     break;
   case TYPE_FLOAT:
+    list->cmp = compare_float;
+    list->to_string = float_toString;
+    list->free = free_float;
+    list->make = (void *(*)(va_list))make_float;
     break;
   case TYPE_CHAR:
+    list->cmp = compare_char;
+    list->to_string = char_toString;
+    list->free = free_char;
+    list->make = (void *(*)(va_list))make_char;
     break;
   default:
     list->cmp = NULL;

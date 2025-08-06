@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/_types/_va_list.h>
 
-#include "./utils.h"
+#include "./utils/int.h"
 
 typedef enum {
   TYPE_INT,
