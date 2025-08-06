@@ -1,17 +1,33 @@
 #include "./linkedList.h"
 #include "./utils/char.h"
 #include "./utils/float.h"
+#include <stdlib.h>
 
-ListItem *pop(List *list, void *value) {
+ListItem *pop(List *list, ...) {
+  if (!list)
+    return NULL;
+
   ListItem *head = list->entry;
   if (!head)
     return NULL;
 
+  va_list args;
+  va_start(args, list);
+  void *value = list->make(args);
+  va_end(args);
+
+  if (!value)
+    return NULL;
+
   if (list->cmp(head->value, value)) {
     ListItem *next = head->next;
+    if (list->free)
+      list->free(head->value);
     free(head);
     list->entry = next;
     list->len--;
+
+    free(value);
     return next;
   }
 
@@ -21,8 +37,11 @@ ListItem *pop(List *list, void *value) {
   while (curr) {
     if (list->cmp(curr->value, value)) {
       prev->next = curr->next;
-      free(curr);
       list->len--;
+
+      if (list->free)
+        list->free(curr->value);
+      free(curr);
       return head;
     }
 
@@ -30,6 +49,7 @@ ListItem *pop(List *list, void *value) {
     curr = curr->next;
   }
 
+  free(value);
   return head;
 }
 
@@ -38,7 +58,10 @@ size_t push(List *list, ListItem *newItem, size_t idx) {
     return (size_t)-1;
 
   if (idx == 0 || !list->entry) {
+    if (list->entry && list->len > 0)
+      newItem->next = list->entry;
     list->entry = newItem;
+
     if (list->len == 0)
       list->end = newItem;
     list->len++;
@@ -46,7 +69,7 @@ size_t push(List *list, ListItem *newItem, size_t idx) {
   }
 
   ListItem *prev = list->entry;
-  size_t i = 1;
+  size_t i = 0;
   while (prev->next && i < idx) {
     prev = prev->next;
     i++;
@@ -98,6 +121,9 @@ char *get_string_to_print(List *list) {
 }
 
 void print_item(List *list, ListItem *item) {
+  if (!list || !item)
+    return;
+
   char buffer[32];
   list->to_string(item->value, buffer);
   printf("%s\n", buffer);
@@ -216,7 +242,7 @@ size_t get_index(List *list, ListItem *item) {
 }
 
 ListItem *get_item(List *list, size_t idx) {
-  if (!list || idx < 0 || idx > list->len)
+  if (!list || idx > list->len)
     return NULL;
 
   ListItem *next = list->entry;
@@ -238,13 +264,21 @@ ListItem *get_item_from_value(List *list, ...) {
   void *value = list->make(args);
   va_end(args);
 
+  if (!value)
+    return NULL;
+
   ListItem *curr = list->entry;
   while (curr) {
-    if (list->cmp(curr->value, value))
+    if (list->cmp(curr->value, value)) {
+      if (list->free)
+        list->free(value);
       return curr;
+    }
 
     curr = curr->next;
   }
 
+  if (list->free)
+    list->free(value);
   return NULL;
 }
