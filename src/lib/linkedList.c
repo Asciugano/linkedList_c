@@ -1,11 +1,4 @@
 #include "./linkedList.h"
-#include "compare.h"
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/_types/_va_list.h>
 
 ListItem *pop(List *list, void *value) {
   ListItem *head = list->entry;

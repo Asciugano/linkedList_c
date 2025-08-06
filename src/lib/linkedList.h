@@ -1,11 +1,13 @@
 #pragma once
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/_types/_va_list.h>
 
-#include "./compare.h"
+#include "./utils.h"
 
 typedef enum {
   TYPE_INT,

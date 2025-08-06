@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -g -Isrc/lib
 
-SRCS = src/main.c src/lib/linkedList.c src/lib/compare.c
+SRCS = src/main.c src/lib/linkedList.c src/lib/utils.c
 
 OBJS = $(SRCS:src/%.c=build/%.o)
 
