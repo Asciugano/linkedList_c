@@ -14,6 +14,8 @@ int main(void) {
   push(list, init_item(list, 'a'), 0);
   print_list(list);
 
+  printf("%zu\n", get_index(list, get_item_from_value(list, 's')));
+
   free_list(list, true);
   return 0;
 }

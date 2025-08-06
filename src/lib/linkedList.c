@@ -33,50 +33,33 @@ ListItem *pop(List *list, void *value) {
   return head;
 }
 
-size_t push(List *list, ListItem *newItem, size_t i) {
+size_t push(List *list, ListItem *newItem, size_t idx) {
   if (!list || !newItem)
-    exit(1);
-  if (i == 0 || !list->entry) {
-    ListItem *next = list->entry;
-    newItem->next = next ? next : NULL;
+    return (size_t)-1;
+
+  if (idx == 0 || !list->entry) {
     list->entry = newItem;
-
-    list->len++;
-
-    if (list->len == 1) {
+    if (list->len == 0)
       list->end = newItem;
-    }
-
+    list->len++;
     return 0;
   }
 
-  size_t count = 0;
-  ListItem *head = list->entry;
-  ListItem *curr = head->next;
-  ListItem *prev = head;
-
-  while (count < list->len && curr) {
-    ListItem *next = curr->next;
-
-    if (count >= list->len - 2)
-      list->end = newItem;
-    if (count == i - 1) {
-      prev->next = newItem;
-      newItem->next = curr;
-
-      list->len++;
-      return count;
-    }
-    prev = curr;
-    curr = curr->next;
-    next = next->next;
-    count++;
+  ListItem *prev = list->entry;
+  size_t i = 1;
+  while (prev->next && i < idx) {
+    prev = prev->next;
+    i++;
   }
 
+  newItem->next = prev->next;
   prev->next = newItem;
-  newItem->next = NULL;
+
+  if (!newItem->next)
+    list->end = newItem;
+
   list->len++;
-  return count;
+  return i;
 }
 
 char *get_string_to_print(List *list) {
@@ -112,6 +95,12 @@ char *get_string_to_print(List *list) {
 
   strcat(result, " ]\n");
   return result;
+}
+
+void print_item(List *list, ListItem *item) {
+  char buffer[32];
+  list->to_string(item->value, buffer);
+  printf("%s\n", buffer);
 }
 
 void print_list(List *list) {
@@ -238,4 +227,24 @@ ListItem *get_item(List *list, size_t idx) {
   }
 
   return next;
+}
+
+ListItem *get_item_from_value(List *list, ...) {
+  if (!list || !list->make || !list->entry)
+    return NULL;
+
+  va_list args;
+  va_start(args, list);
+  void *value = list->make(args);
+  va_end(args);
+
+  ListItem *curr = list->entry;
+  while (curr) {
+    if (list->cmp(curr->value, value))
+      return curr;
+
+    curr = curr->next;
+  }
+
+  return NULL;
 }

@@ -19,3 +19,5 @@ main
 # Backup di compilatori o editor
 *.bak
 *.tmp
+
+src/main.c

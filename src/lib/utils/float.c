@@ -1,6 +1,6 @@
 #include "./float.h"
 
-bool compare_float(void *a, void *b) { return (float *)a == (float *)b; }
+bool compare_float(void *a, void *b) { return *(float *)a == *(float *)b; }
 
 void float_toString(void *data, char *buffer) {
   sprintf(buffer, "%.2f", *(float *)data);

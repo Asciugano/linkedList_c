@@ -38,9 +38,13 @@ List *init_list(DataType type);
 ListItem *init_item(List *list, ...);
 void free_list(List *list, bool clean_struct);
 
+char *get_string_to_print(List *list);
 size_t get_index(List *list, ListItem *item);
 ListItem *get_item(List *list, size_t idx);
+ListItem *get_item_from_value(List *list, ...);
+
 ListItem *pop(List *list, void *value);
-size_t push(List *list, ListItem *newItem, size_t i);
-char *get_string_to_print(List *list);
+size_t push(List *list, ListItem *newItem, size_t idx);
+
 void print_list(List *list);
+void print_item(List *list, ListItem *item);

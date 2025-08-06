@@ -1,6 +1,6 @@
 #include "./char.h"
 
-bool compare_char(void *a, void *b) { return (char *)a == (char *)b; }
+bool compare_char(void *a, void *b) { return *(char *)a == *(char *)b; }
 
 void char_toString(void *data, char *buffer) {
   sprintf(buffer, "'%c'", *(char *)data);

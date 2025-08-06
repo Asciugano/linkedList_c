@@ -1,7 +1,6 @@
 #include "./int.h"
-#include <stdlib.h>
 
-bool compare_int(void *a, void *b) { return (int *)a == (int *)b; }
+bool compare_int(void *a, void *b) { return *(int *)a == *(int *)b; }
 
 void int_toString(void *data, char *buffer) {
   sprintf(buffer, "%d", *(int *)data);
