@@ -6,25 +6,17 @@
 
 int main(void) {
 
-  List *list = init_list(TYPE_CHAR);
+  List *list = init_list(TYPE_INT);
 
-  push(list, init_item(list, 's'), 0);
+  print_list(list);
+  push(list, init_item(list, 2), 0);
   print_list(list);
 
-  push(list, init_item(list, 'a'), 0);
+  push(list, init_item(list, 43), 1);
   print_list(list);
 
-  printf("index of item->value = s: %zu\n",
-         get_index(list, get_item_from_value(list, 's')));
-
-  pop(list, 'a');
-  print_list(list);
-
-  push(list, init_item(list, 'h'), 1);
-  push(list, init_item(list, 'c'), 2);
-
-  size_t idx = get_index(list, get_item_from_value(list, 'c'));
-  printf("index of item->value = c: %zu\n", idx);
+  size_t idx = get_index(list, get_item_from_value(list, 2));
+  printf("%zu\n", idx);
   print_item(list, get_item(list, idx));
 
   print_list(list);

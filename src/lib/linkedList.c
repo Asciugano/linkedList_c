@@ -27,6 +27,8 @@ ListItem *pop(List *list, ...) {
     list->entry = next;
     list->len--;
 
+    if (list->free)
+      list->free(value);
     free(value);
     return next;
   }
@@ -49,6 +51,8 @@ ListItem *pop(List *list, ...) {
     curr = curr->next;
   }
 
+  if (list->free)
+    list->free(value);
   free(value);
   return head;
 }
